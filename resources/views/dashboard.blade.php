@@ -85,14 +85,14 @@
     <!-- 🔹 Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-10">
         <!-- Employee Status Chart -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Employee Status</h3>
+        <div class="bg-gray-200 rounded-2xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-700  mb-4">Employee Status</h3>
             <canvas id="statusChart" height="120"></canvas>
         </div>
 
         <!-- Gender Distribution Chart -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Gender Distribution</h3>
+        <div class="bg-gray-200  rounded-2xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-700 mb-4">Gender Distribution</h3>
             <canvas id="genderChart" height="120"></canvas>
         </div>
     </div>

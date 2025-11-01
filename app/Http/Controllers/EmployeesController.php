@@ -5,23 +5,23 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\EmployeesModel;
 
-
 class EmployeesController extends Controller
 {
     public function index(Request $request)
     {
-        $employees = EmployeesModel::all();
-        $employees = \App\Models\EmployeesModel::orderBy('id', 'desc')->paginate(10);
-
-        //search functinality
         $search = $request->input('search');
-        $employees = EmployeesModel::when($search, function ($query, $search) {
-            return $query->where('first_name', 'like', "%{$search}%")
-                ->orWhere('last_name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
-                ->orWhere('phone', 'like', "%{$search}%")
-                ->orWhere('address', 'like', "%{$search}%");
-        })->orderBy('id', 'desc')->paginate(10);
+
+        $query = EmployeesModel::orderBy('id', 'desc');
+
+        // Apply search filter if provided
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            });
+        }
+
+        $employees = $query->paginate(10); // 10 items per page
 
         return view('employees', compact('employees'));
     }
@@ -29,14 +29,14 @@ class EmployeesController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'first_name' => 'required',
-            'last_name' => 'required',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:employees,email',
-            'phone' => 'required',
-            'address' => 'required',
-            'gender' => 'required',
+            'phone' => 'required|string|max:15',
+            'address' => 'required|string',
+            'gender' => 'required|in:Male,Female',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'status' => 'required',
+            'status' => 'required|boolean',
         ]);
 
         $imageName = null;
@@ -65,19 +65,24 @@ class EmployeesController extends Controller
         $employee = EmployeesModel::findOrFail($id);
 
         $request->validate([
-            'first_name' => 'required',
-            'last_name' => 'required',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:employees,email,' . $id,
-            'phone' => 'required',
-            'address' => 'required',
-            'gender' => 'required',
+            'phone' => 'required|string|max:15',
+            'address' => 'required|string',
+            'gender' => 'required|in:Male,Female',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'status' => 'required',
+            'status' => 'required|boolean',
         ]);
 
         $imageName = $employee->image;
 
         if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($imageName && file_exists(public_path('uploads/employees/' . $imageName))) {
+                unlink(public_path('uploads/employees/' . $imageName));
+            }
+
             $imageName = time() . '.' . $request->image->extension();
             $request->image->move(public_path('uploads/employees'), $imageName);
         }
@@ -96,15 +101,32 @@ class EmployeesController extends Controller
         return back()->with('success', 'Employee updated successfully!');
     }
 
-    public function destroy($id)
+    public function employeesDetails($id)
     {
         $employee = EmployeesModel::findOrFail($id);
+        return view('employee_details', compact('employee'));
+    }
 
-        if ($employee->image && file_exists(public_path('uploads/employees/' . $employee->image))) {
-            unlink(public_path('uploads/employees/' . $employee->image));
+    public function destroy($id)
+    {
+        try {
+            $employee = EmployeesModel::findOrFail($id);
+
+            if ($employee->image && file_exists(public_path('uploads/employees/' . $employee->image))) {
+                unlink(public_path('uploads/employees/' . $employee->image));
+            }
+
+            $employee->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Employee deleted successfully!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting employee: ' . $e->getMessage()
+            ], 500);
         }
-
-        $employee->delete();
-        return back()->with('success', 'Employee deleted successfully!');
     }
 }

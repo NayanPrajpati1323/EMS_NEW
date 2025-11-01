@@ -6,14 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('page-title', config('app.name'))</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @stack('head')
 </head>
 
 <body class="bg-gray-100 text-gray-800">
     <div class="flex">
 
         {{-- Sidebar --}}
-        <aside 
-            style="background-color: #343c49; width: 240px;" 
+        <aside
+            style="background-color: #343c49; width: 240px;"
             class="fixed left-0 top-0 h-screen w-64 text-white p-4 flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
             <h2 class="text-2xl font-bold mb-6 text-center tracking-wide sticky top-0 py-2 z-10">
                 EMS
@@ -24,7 +26,7 @@
                 {{-- Dashboard --}}
                 <li>
                     <a href="{{ route('dashboard') }}"
-                        class="flex items-center justify-between p-2 rounded hover:bg-gray-700 transition">
+                        class="flex items-center justify-between p-2 rounded hover:bg-gray-500 transition">
                         <div class="flex items-center gap-3">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -39,7 +41,7 @@
                 {{-- Employees --}}
                 <li>
                     <a href="{{ route('employees.index') }}"
-                        class="flex items-center justify-between p-2 rounded hover:bg-gray-700 transition">
+                        class="flex items-center justify-between p-2 rounded hover:bg-gray-500 transition">
                         <div class="flex items-center gap-3">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -54,7 +56,7 @@
                 {{-- Reports --}}
                 <li>
                     <a href="#"
-                        class="flex items-center justify-between p-2 rounded hover:bg-gray-700 transition">
+                        class="flex items-center justify-between p-2 rounded hover:bg-gray-500 transition">
                         <div class="flex items-center gap-3">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -69,7 +71,7 @@
                 {{-- Settings --}}
                 <li>
                     <a href="#"
-                        class="flex items-center justify-between p-2 rounded hover:bg-gray-700 transition">
+                        class="flex items-center justify-between p-2 rounded hover:bg-gray-500 transition">
                         <div class="flex items-center gap-3">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
@@ -86,7 +88,7 @@
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit"
-                            class="flex items-center gap-3 p-2 rounded hover:bg-red-700 w-full text-left transition">
+                            class="flex items-center gap-3 p-2 rounded hover:bg-gray-500 w-full text-left transition">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -105,18 +107,30 @@
 
             {{-- Navbar --}}
             <nav style="background-color: #64c5b1;"
-                class="top-0 z-20 bg-white shadow p-4 flex justify-between items-center">
+                class="top-0 z-20 shadow p-2 flex justify-between items-center">
                 @php
-                    $routeName = request()->route()->getName();
-                    $routeBase = explode('.', $routeName)[0];
-                    $pageTitle = ucfirst($routeBase);
+                $routeName = request()->route()->getName();
+                $routeBase = explode('.', $routeName)[0] ?? 'Dashboard';
+                $pageTitle = ucfirst($routeBase);
                 @endphp
 
                 <span class="font-semibold text-lg text-white">
-                    {{ $pageTitle ?? 'Dashboard' }}
+                    {{ $pageTitle }}
                 </span>
 
-                <span id="themeToggle" class="cursor-pointer text-xl">🌙</span>
+                {{-- Logged-in user name --}}
+                @auth
+                <span class="font-medium text-xs text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {{ Auth::user()->name ?? 'User' }}
+                </span>
+                @endauth
+
+                
             </nav>
 
             {{-- Page Content --}}
